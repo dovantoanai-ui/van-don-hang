@@ -174,6 +174,12 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
 /* URGENCY BADGES on card */
 .b-gap{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;}
 .b-hen{background:#dbeafe;color:#1976d2;border:1px solid #93c5fd;}
+/* STORE THRESH */
+.st-row{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:.5px solid var(--bd);}
+.st-row:last-child{border-bottom:none;}
+.st-name{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.st-inp{width:38px;padding:5px 4px;border-radius:6px;border:1.5px solid;font-size:12px;font-weight:700;text-align:center;background:#fff;outline:none;}
+.st-del{width:28px;height:28px;border-radius:7px;border:none;background:var(--reb);color:var(--re);font-size:14px;cursor:pointer;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -185,7 +191,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
     <div style="flex:1"><div class="tb-ttl">NemThanh Van Don</div><div class="tb-sub" id="homeSub"></div></div>
     <button class="tb-btn light" onclick="pullSheet()" id="btnPull">Tai Sheet</button>
     <button class="tb-btn light" onclick="showDebug()" style="background:rgba(255,255,255,.1);font-size:11px;">Debug</button>
-    <button class="tb-btn or" onclick="goTab('vd')">Tao van don</button>
+    <button class="tb-btn or" onclick="taoVanDonMoi()">Tao van don</button>
   </div>
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot" style="background:var(--am);"></div>
@@ -361,7 +367,32 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
     </div>
     <div id="threshRows"></div>
   </div>
-  <div style="padding:14px 16px;"><button class="btnsave" onclick="saveThresh()">Luu nguong</button></div>
+
+  <!-- Nguong theo cua hang -->
+  <div class="thresh-sec" style="margin-top:12px;">
+    <div class="thresh-hd" style="justify-content:space-between;">
+      <span><span class="form-hd-ico">🏪</span><span class="form-hd-ttl" style="margin-left:6px;">Nguong theo cua hang</span></span>
+      <span style="font-size:11px;color:var(--mu);font-weight:400;">Uu tien hon theo SP</span>
+    </div>
+    <div style="padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--bd);display:flex;gap:6px;align-items:center;">
+      <input id="storeThreshSearch" class="finp" style="flex:1;font-size:13px;padding:8px 10px;" placeholder="Ten cua hang..." oninput="filterStoreList()" autocomplete="off">
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+        <input id="stNewRed" class="st-inp ti-r" style="border-color:#e24b4a;" placeholder="Do" value="4" title="Nguong do">
+        <input id="stNewAmb" class="st-inp ti-a" style="border-color:#e6a817;" placeholder="Vang" value="7" title="Nguong vang">
+      </div>
+      <button onclick="addStoreThresh()" style="padding:8px 12px;border-radius:8px;border:none;background:var(--gr);color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">+ Them</button>
+    </div>
+    <!-- Dropdown goi y cua hang -->
+    <div id="storeDropdown" style="display:none;max-height:140px;overflow-y:auto;border-bottom:1px solid var(--bd);"></div>
+    <!-- Danh sach cua hang da cai nguong -->
+    <div id="storeThreshRows">
+      <div style="padding:20px;text-align:center;color:var(--mu);font-size:13px;">Chua co cua hang nao. Nhap ten va bam Them.</div>
+    </div>
+  </div>
+
+  <div style="padding:14px 16px;display:flex;gap:8px;">
+    <button class="btnsave" onclick="saveThresh()">Luu nguong</button>
+  </div>
 </div>
 
 <!-- LICH SU VAN DON -->
@@ -406,7 +437,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
   </div>
   <div style="padding:0 16px;display:flex;flex-direction:column;gap:9px;">
     <button class="btnsave" onclick="saveSettings()">Luu cai dat</button>
-    <button style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--bd2);background:var(--sf);color:var(--gr);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;cursor:pointer;" onclick="go('s-thresh')">Cai nguong canh bao</button>
+    <button style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--bd2);background:var(--sf);color:var(--gr);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;cursor:pointer;" onclick="go('s-thresh');renderThreshRows();renderStoreThreshRows();">Cai nguong canh bao</button>
   </div>
   <div style="height:20px;"></div>
 </div>
@@ -436,6 +467,7 @@ var editItemId = null;
 var fprodRows = [], fprodData = {};
 var GS_URL = '', WARN_DAYS = 3;
 var curLoaiGiao = 'normal';
+var THRESH_STORE = {}; // Nguong theo cua hang: {tenCH: {red:N, amb:N}}
 
 // Nguong canh bao mac dinh theo san pham
 var THRESH_DEFAULT = {
@@ -480,6 +512,7 @@ var _vi=ld('vd_items',[]);vdItems=Array.isArray(_vi)?_vi:[];
 GS_URL = ld('vd_gs_url','');
 WARN_DAYS = ld('vd_warn_days',3);
 THRESH_DEFAULT = ld('vd_thresh', THRESH_DEFAULT);
+THRESH_STORE = ld('vd_thresh_store', {});
 
 var today = todayStr();
 var todayFmt = (function(){var d=new Date();var days=['CN','T2','T3','T4','T5','T6','T7'];return days[d.getDay()]+', '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();})();
@@ -515,8 +548,15 @@ function getThresh(prodName){
   }
   return t['Mac dinh']||{red:3,amb:7};
 }
-function getColor(soNgay, prodName){
+function getColor(soNgay, prodName, storeName){
   if(soNgay===null||soNgay===undefined) return '';
+  // Nguong cua hang uu tien hon nguong san pham
+  if(storeName && THRESH_STORE[storeName]){
+    var st=THRESH_STORE[storeName];
+    if(soNgay<=st.red) return 'red';
+    if(soNgay<=st.amb) return 'amber';
+    return 'ok';
+  }
   var th = getThresh(prodName);
   if(soNgay<=th.red) return 'red';
   if(soNgay<=th.amb) return 'amber';
@@ -580,7 +620,7 @@ function renderHome(){
       if(val===null||val===undefined||val==='') return;
       var n = parseFloat(val);
       if(isNaN(n)) return;
-      var col = getColor(n, pc[1]);
+      var col = getColor(n, pc[1], row.tenCH);
       if(col==='red'||col==='amber'){
         alerts.push({store:row.tenCH, prod:pc[1], soNgay:n, color:col, nv:row.nvGiao, mapUrl:row.mapUrl});
       }
@@ -668,7 +708,7 @@ function renderHome(){
   // Nut tao van don
   var btn=document.createElement('div');
   btn.style.cssText='margin:4px 16px 10px;';
-  btn.innerHTML='<button style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--gr);color:#fff;font-family:\'Be Vietnam Pro\',sans-serif;font-size:15px;font-weight:700;cursor:pointer;" onclick="goTab(\'vd\')">Tao van don hom nay</button>';
+  btn.innerHTML='<button style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--gr);color:#fff;font-family:\'Be Vietnam Pro\',sans-serif;font-size:15px;font-weight:700;cursor:pointer;" onclick="taoVanDonMoi()">Tao van don hom nay</button>';
   el.appendChild(btn);
 }
 
@@ -1081,8 +1121,114 @@ function saveThresh(){
     if(r&&a){THRESH_DEFAULT[prod]={red:parseInt(r.value)||3,amb:parseInt(a.value)||7};}
   });
   sv('vd_thresh',THRESH_DEFAULT);
+  // Luu nguong cua hang hien dang hien tren man hinh
+  saveStoreThreshInline();
+  sv('vd_thresh_store',THRESH_STORE);
   toast('Da luu nguong canh bao!');
   goTab('set');
+}
+
+// == NGUONG CUA HANG ==
+function renderStoreThreshRows(){
+  var c=document.getElementById('storeThreshRows');
+  if(!c) return;
+  var keys=Object.keys(THRESH_STORE);
+  if(!keys.length){
+    c.innerHTML='<div style="padding:20px;text-align:center;color:var(--mu);font-size:13px;">Chua co cua hang nao. Nhap ten va bam Them.</div>';
+    return;
+  }
+  c.innerHTML='';
+  // Header
+  var hd=document.createElement('div');
+  hd.style.cssText='display:grid;grid-template-columns:1fr 38px 6px 38px 32px;gap:4px;padding:6px 14px;background:var(--bg);border-bottom:1px solid var(--bd);';
+  hd.innerHTML='<span style="font-size:10px;font-weight:700;color:var(--mu);">CUA HANG</span>'+
+    '<span style="font-size:10px;font-weight:700;color:var(--re);text-align:center;">DO</span><span></span>'+
+    '<span style="font-size:10px;font-weight:700;color:var(--am);text-align:center;">VANG</span><span></span>';
+  c.appendChild(hd);
+  keys.sort().forEach(function(storeName){
+    var th=THRESH_STORE[storeName];
+    var row=document.createElement('div');
+    row.className='st-row';
+    var safeKey=storeName.replace(/[^a-zA-Z0-9]/g,'_');
+    row.innerHTML='<span class="st-name" title="'+esc(storeName)+'">'+esc(storeName)+'</span>'+
+      '<input class="st-inp" style="border-color:#e24b4a;color:#c0392b;" id="str_'+safeKey+'" value="'+th.red+'" title="Nguong do">'+
+      '<span style="font-size:11px;color:var(--mu);text-align:center;">/</span>'+
+      '<input class="st-inp" style="border-color:#e6a817;color:#9a6500;" id="sta_'+safeKey+'" value="'+th.amb+'" title="Nguong vang">'+
+      '<button class="st-del" onclick="delStoreThresh(\''+safeKey+'\',\''+esc(storeName)+'\')">x</button>';
+    // Gan data-name de tim lai
+    row.dataset.name=storeName;
+    c.appendChild(row);
+  });
+}
+
+function addStoreThresh(){
+  var nameEl=document.getElementById('storeThreshSearch');
+  var redEl=document.getElementById('stNewRed');
+  var ambEl=document.getElementById('stNewAmb');
+  var name=(nameEl.value||'').trim();
+  if(!name){toast('Nhap ten cua hang truoc!');nameEl.focus();return;}
+  var red=parseInt(redEl.value)||4;
+  var amb=parseInt(ambEl.value)||7;
+  if(red>=amb){toast('Nguong Do phai nho hon Vang!');return;}
+  THRESH_STORE[name]={red:red,amb:amb};
+  sv('vd_thresh_store',THRESH_STORE);
+  nameEl.value='';
+  document.getElementById('storeDropdown').style.display='none';
+  renderStoreThreshRows();
+  toast('Da them nguong cho '+name);
+}
+
+function delStoreThresh(safeKey, storeName){
+  // Tim dung ten trong THRESH_STORE
+  var found=Object.keys(THRESH_STORE).find(function(k){return k.replace(/[^a-zA-Z0-9]/g,'_')===safeKey;});
+  if(!found&&storeName) found=storeName;
+  if(!found) return;
+  delete THRESH_STORE[found];
+  sv('vd_thresh_store',THRESH_STORE);
+  renderStoreThreshRows();
+  toast('Da xoa nguong cua '+found);
+}
+
+function saveStoreThreshInline(){
+  // Luu tat ca input dang hien tren man hinh
+  var rows=document.querySelectorAll('#storeThreshRows [data-name]');
+  rows.forEach(function(row){
+    var name=row.dataset.name;
+    var safeKey=name.replace(/[^a-zA-Z0-9]/g,'_');
+    var r=document.getElementById('str_'+safeKey);
+    var a=document.getElementById('sta_'+safeKey);
+    if(r&&a) THRESH_STORE[name]={red:parseInt(r.value)||3,amb:parseInt(a.value)||7};
+  });
+  sv('vd_thresh_store',THRESH_STORE);
+}
+
+function filterStoreList(){
+  var q=(document.getElementById('storeThreshSearch').value||'').toLowerCase().trim();
+  var dd=document.getElementById('storeDropdown');
+  if(!q||!sheetRows.length){dd.style.display='none';return;}
+  // Lay danh sach ten cua hang tu sheetRows
+  var names={};
+  sheetRows.forEach(function(r){if(r.tenCH)names[r.tenCH]=1;});
+  var matches=Object.keys(names).filter(function(n){return n.toLowerCase().indexOf(q)>=0;}).slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.style.display='block';
+  dd.innerHTML='';
+  matches.forEach(function(n){
+    var item=document.createElement('div');
+    item.style.cssText='padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:.5px solid var(--bd);display:flex;align-items:center;justify-content:space-between;';
+    var hasCustom=!!THRESH_STORE[n];
+    item.innerHTML='<span>'+esc(n)+'</span>'+(hasCustom?'<span style="font-size:10px;background:var(--grb);color:var(--gr);padding:2px 7px;border-radius:8px;font-weight:700;">Da co</span>':'');
+    item.onclick=function(){
+      document.getElementById('storeThreshSearch').value=n;
+      dd.style.display='none';
+      // Neu da co nguong thi dien san so vao
+      if(THRESH_STORE[n]){
+        document.getElementById('stNewRed').value=THRESH_STORE[n].red;
+        document.getElementById('stNewAmb').value=THRESH_STORE[n].amb;
+      }
+    };
+    dd.appendChild(item);
+  });
 }
 
 // == SHEET SYNC ==
@@ -1417,7 +1563,7 @@ function updateAddAllBar(){
       if(spFilter.length&&spFilter.indexOf(pc[1])<0) return;
       var val=row[pc[0]];if(!val&&val!==0)return;
       var n=parseFloat(val);if(isNaN(n))return;
-      var col=getColor(n,pc[1]);
+      var col=getColor(n,pc[1],row.tenCH);
       if(col==='red'||col==='amber'){
         if(homeFilter==='gap'&&col!=='red') return;
         if(homeFilter==='sap'&&col!=='amber') return;
@@ -1429,6 +1575,79 @@ function updateAddAllBar(){
   bar.style.display='flex';
   var spTxt=spFilter.length?(' · '+spFilter.join(', ')):'';
   if(txt)txt.textContent=homeNV+spTxt+' — '+cnt+' CH can giao';
+}
+
+// == TAO VAN DON MOI - tu dong import tu Sheet ==
+function taoVanDonMoi(){
+  // Neu da co van don thi chuyen tab luon
+  if(vdItems.length>0){goTab('vd');return;}
+  // Neu chua co Sheet data thi canh bao
+  if(!sheetRows.length){
+    toast('Chua co du lieu! Bam "Tai Sheet" truoc.');
+    return;
+  }
+  // Auto-import tat ca CH can giao gap/sap tu sheetRows
+  var PROD_COLS=[
+    ['Nem chua - so ngay','Nem chua'],
+    ['Nem Thinh - so ngay','Nem Thinh'],
+    ['Banh bao kim sa - so ngay','Banh bao kim sa'],
+    ['Banh bao xa xiu - so ngay','Banh bao xa xiu'],
+    ['Banh bao Maylayxia - so ngay','Banh bao Maylayxia'],
+    ['Nem Tom - so ngay','Nem Tom'],
+    ['Ha cao tom - so ngay','Ha cao tom'],
+    ['Mo heo - so ngay','Mo heo thao duoc'],
+    ['Nuoc mam 36N - so ngay','Nuoc mam 36N'],
+    ['Nuoc mam 31N - so ngay','Nuoc mam 31N'],
+    ['Nuoc mam 29N - so ngay','Nuoc mam 29N'],
+    ['Nuoc mam 26N 1800ml - so ngay','Nuoc mam 26N'],
+    ['Nuoc mam 20N 1800ml - so ngay','Nuoc mam 20N 1800ml'],
+    ['Nuoc mam 20N 1000ml - so ngay','Nuoc mam 20N 1000ml'],
+    ['Mam tom 500g - so ngay','Mam tom 500g'],
+    ['Mam tom 250g - so ngay','Mam tom 250g'],
+    ['Mam tom 120g - so ngay','Mam tom 120g'],
+    ['Mam tep 500g - so ngay','Mam tep 500g'],
+    ['Mam tep 250g - so ngay','Mam tep 250g'],
+    ['Mam tep 120g - so ngay','Mam tep 120g'],
+    ['Vit co lung - so ngay','Vit co lung']
+  ];
+  var chMap={};
+  sheetRows.forEach(function(row){
+    if(!row.tenCH) return;
+    var tt=String(row.tinhTrang||'').toLowerCase();
+    if(tt.indexOf('dung')>=0||tt.indexOf('dung')>=0) return;
+    PROD_COLS.forEach(function(pc){
+      var val=row[pc[0]];
+      if(val===null||val===undefined||val==='') return;
+      var n=parseFloat(val);if(isNaN(n)) return;
+      var col=getColor(n,pc[1],row.tenCH);
+      if(col!=='red'&&col!=='amber') return;
+      var key=row.tenCH;
+      if(!chMap[key]){
+        chMap[key]={
+          store:row.tenCH, nvGiao:row.nvGiao||'',
+          mapUrl:row.mapUrl||'', quan:row.quan||'',
+          prods:{}, lydo:'date', congNo:0, ghiChu:''
+        };
+      }
+      if(!chMap[key].prods[pc[1]]){
+        chMap[key].prods[pc[1]]={name:pc[1],qty:0,note:'Thay date (con '+n+'n)'};
+      }
+    });
+  });
+  var added=Object.keys(chMap).length;
+  if(!added){toast('Khong co cua hang nao can giao!');return;}
+  Object.keys(chMap).forEach(function(storeName){
+    var data=chMap[storeName];
+    var prods=Object.keys(data.prods).map(function(k){return data.prods[k];});
+    vdItems.push({
+      id:uid(), store:storeName, nvGiao:data.nvGiao, lydo:'date',
+      congNo:0, ghiChu:'', mapUrl:data.mapUrl, quan:data.quan,
+      products:prods
+    });
+  });
+  sv('vd_items',vdItems);
+  toast('Da them '+added+' cua hang vao van don!');
+  goTab('vd');
 }
 
 function addAllNVToVanDon(){
@@ -1475,7 +1694,7 @@ function addAllNVToVanDon(){
       var val=row[pc[0]];
       if(val===null||val===undefined||val==='') return;
       var n=parseFloat(val);if(isNaN(n)) return;
-      var col=getColor(n,pc[1]);
+      var col=getColor(n,pc[1],row.tenCH);
       if(col!=='red'&&col!=='amber') return;
       if(homeFilter==='gap'&&col!=='red') return;
       if(homeFilter==='sap'&&col!=='amber') return;
@@ -1552,7 +1771,7 @@ function bulkAddToVanDon(){
     PROD_COLS.forEach(function(pc){
       var val=row[pc[0]];if(val===null||val===undefined||val==='')return;
       var n=parseFloat(val);if(isNaN(n))return;
-      var col=getColor(n,pc[1]);
+      var col=getColor(n,pc[1],row.tenCH);
       if(col==='red'||col==='amber'){
         byStore[row.tenCH].prods.push({name:pc[1],qty:0,note:'Thay date (con '+n+'n)'});
       }
