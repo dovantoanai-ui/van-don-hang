@@ -202,7 +202,14 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
     <div style="flex:1"><div class="tb-ttl">NemThanh Van Don</div><div class="tb-sub" id="homeSub"></div></div>
     <button class="tb-btn light" onclick="pullSheet()" id="btnPull">Tai Sheet</button>
     <button class="tb-btn light" onclick="showDebug()" style="background:rgba(255,255,255,.1);font-size:11px;">Debug</button>
-    <button class="tb-btn or" onclick="taoVanDonMoi()">Tao van don</button>
+    <button class="tb-btn or" onclick="goTab('vd')">+ Phat sinh</button>
+  </div>
+  <!-- Info banner giai thich quy trinh moi -->
+  <div style="padding:9px 16px;background:#eff6ff;border-bottom:1px solid #bfdbfe;display:flex;align-items:flex-start;gap:9px;">
+    <span style="font-size:15px;flex-shrink:0;line-height:1.3;">💡</span>
+    <div style="font-size:11px;color:#1e40af;line-height:1.5;flex:1;">
+      <b>Quy trinh moi:</b> Don den hang (theo nguong date) tu dong chay sang app Giao hang cho NV. Man nay de <b>QL monitor</b> + nhap <b>don phat sinh</b> (don dat dot xuat, thu no, giao gap).
+    </div>
   </div>
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot" style="background:var(--am);"></div>
@@ -234,17 +241,20 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
   <div style="height:20px;"></div>
 </div>
 
-<!-- VAN DON -->
+<!-- DON PHAT SINH (cu: Van Don) -->
 <div class="sc" id="s-vd">
   <div class="tb">
     <button class="tb-back" onclick="goTab('home')">&#8592;</button>
-    <div style="flex:1"><div class="tb-ttl" id="vdTtl">Van don hom nay</div><div class="tb-sub" id="vdSub"></div></div>
-    <button class="tb-btn light" onclick="resetVanDon()" title="Xoa het va tao lai tu Sheet" style="font-size:11px;">&#8635; Lam moi</button>
+    <div style="flex:1"><div class="tb-ttl" id="vdTtl">Don phat sinh</div><div class="tb-sub" id="vdSub"></div></div>
     <button class="tb-btn light" onclick="autoSort()">Sap xep</button>
     <button class="tb-btn wh" onclick="goExport()">Xuat</button>
     <button class="tb-btn" id="btnPush" onclick="pushVanDon()" style="background:var(--or);color:#fff;">Day Sheet</button>
   </div>
   <div class="nv-tabs" id="nvTabs"></div>
+  <!-- Info banner -->
+  <div style="padding:8px 16px;background:#fef3c7;border-bottom:1px solid #fde68a;font-size:11px;color:#92400e;line-height:1.4;">
+    <b>Don phat sinh:</b> Don khach dat dot xuat, thu no, giao gap, CH moi. Don theo date tu dong chay sang app Giao hang.
+  </div>
   <div id="pushBar" style="display:none;align-items:center;gap:10px;padding:9px 16px;background:#fffbeb;border-bottom:1px solid #fcd34d;">
     <div id="pushDot" style="width:8px;height:8px;border-radius:50%;background:var(--am);flex-shrink:0;"></div>
     <div style="flex:1;font-size:12px;color:#92400e;" id="pushTxt">Chua day len Sheet</div>
@@ -253,9 +263,9 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
   <div class="fbar">
     <button class="ftab on" id="fvAll" onclick="setVdFilter('all')">Tat ca</button>
     <button class="ftab" id="fvNew" onclick="setVdFilter('new')" style="color:var(--or);">Chua day</button>
-    <button class="ftab" id="fvRed" onclick="setVdFilter('red')">Gap</button>
-    <button class="ftab" id="fvBlue" onclick="setVdFilter('order')">Co don</button>
-    <button class="ftab" id="fvDebt" onclick="setVdFilter('debt')">Co no</button>
+    <button class="ftab" id="fvOrder" onclick="setVdFilter('order')">Don dat</button>
+    <button class="ftab" id="fvUrgent" onclick="setVdFilter('urgent')">Gap/Hen</button>
+    <button class="ftab" id="fvDebt" onclick="setVdFilter('debt')">Thu no</button>
   </div>
   <div style="padding:8px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:11px;color:var(--mu);">Bam len/xuong de doi thu tu giao</span>
@@ -268,7 +278,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
 <div class="sc" id="s-add">
   <div class="tb" style="background:var(--gr);">
     <button class="tb-back" onclick="goTab('vd')">&#8592;</button>
-    <div style="flex:1"><div class="tb-ttl" id="addTtl">Them diem giao</div><div class="tb-sub" id="addSub"></div></div>
+    <div style="flex:1"><div class="tb-ttl" id="addTtl">Them don phat sinh</div><div class="tb-sub" id="addSub"></div></div>
   </div>
   <div class="form-sec">
     <div class="form-hd"><span class="form-hd-ico">🏪</span><span class="form-hd-ttl">Thong tin cua hang</span></div>
@@ -284,11 +294,13 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
       <select class="fsel" id="fNVGiao"><option value="">-- Chon NV --</option></select>
     </div>
     <div class="frow">
-      <span class="flbl">Ly do</span>
+      <span class="flbl">Loai don</span>
       <select class="fsel" id="fLyDo">
-        <option value="date">Thay hang het/sap het date</option>
-        <option value="order">Don dat chu dong</option>
-        <option value="both">Ca hai</option>
+        <option value="order">Don khach dat dot xuat</option>
+        <option value="debt">Thu no cua hang</option>
+        <option value="urgent">Giao gap / hen gio</option>
+        <option value="new">Cua hang moi (chua co tren Sheet)</option>
+        <option value="date">Het/sap het date (bo sung)</option>
         <option value="other">Khac</option>
       </select>
     </div>
@@ -403,8 +415,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
     </div>
   </div>
 
-  <div style="padding:14px 16px;display:flex;gap:8px;">
+  <div style="padding:14px 16px;display:flex;gap:8px;flex-direction:column;">
     <button class="btnsave" onclick="saveThresh()">Luu nguong</button>
+    <button onclick="pushThreshToSheet()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--or);background:#fff;color:var(--or);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">&#8593; Day nguong len Sheet (trigger se doc)</button>
+    <div style="font-size:11px;color:var(--mu);text-align:center;line-height:1.4;">Ngưỡng day len Sheet de trigger 5h sang doc,<br>sinh don date tu dong cho NV giao.</div>
   </div>
 </div>
 
@@ -490,7 +504,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
 <!-- BOTTOM NAV -->
 <div class="bnav">
   <button class="bnav-btn on" id="bn-home" onclick="goTab('home')"><span class="bnav-ico">🏠</span><span>Tong quan</span></button>
-  <button class="bnav-btn" id="bn-vd" onclick="goTab('vd')"><span class="bnav-ico">📋</span><span>Van don</span></button>
+  <button class="bnav-btn" id="bn-vd" onclick="goTab('vd')"><span class="bnav-ico">➕</span><span>Phat sinh</span></button>
   <button class="bnav-btn" id="bn-hist" onclick="goTab('hist')"><span class="bnav-ico">🕐</span><span>Lich su</span></button>
   <button class="bnav-btn" id="bn-set" onclick="goTab('set')"><span class="bnav-ico">⚙️</span><span>Cai dat</span></button>
 </div>
@@ -763,10 +777,14 @@ function renderHome(){
   sec.appendChild(card);
   el.appendChild(sec);
 
-  // Nut tao van don
+  // Info text thay cho nut "Tao van don" - cac CH nay tu dong sang app Giao hang
   var btn=document.createElement('div');
-  btn.style.cssText='margin:4px 16px 10px;';
-  btn.innerHTML='<button style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--gr);color:#fff;font-family:\'Be Vietnam Pro\',sans-serif;font-size:15px;font-weight:700;cursor:pointer;" onclick="taoVanDonMoi()">Tao van don hom nay</button>';
+  btn.style.cssText='margin:8px 16px 14px;padding:12px 14px;background:var(--grb);border:1px solid var(--grl);border-radius:10px;display:flex;align-items:center;gap:10px;';
+  btn.innerHTML='<span style="font-size:18px;">🚚</span>'+
+    '<div style="font-size:12px;color:var(--grd);line-height:1.45;flex:1;">'+
+    '<b>Tu dong chay sang app Giao hang</b><br>'+
+    '<span style="color:var(--mu);">Cac CH can giao o tren da duoc phan cong theo NV — nhan vien tu thay trong app giao hang cua ho.</span>'+
+    '</div>';
   el.appendChild(btn);
 }
 
@@ -806,7 +824,7 @@ function renderNVTabs(){
 // == VAN DON LIST ==
 function setVdFilter(f){
   vdFilter=f;
-  var _tabMap={all:'fvAll',new:'fvNew',red:'fvRed',order:'fvBlue',debt:'fvDebt'};
+  var _tabMap={all:'fvAll',new:'fvNew',order:'fvOrder',urgent:'fvUrgent',debt:'fvDebt'};
   Object.keys(_tabMap).forEach(function(x){
     var el=document.getElementById(_tabMap[x]);
     if(el)el.classList.toggle('on',x===f);
@@ -820,9 +838,9 @@ function renderVdList(){
   var list=vdItems.filter(function(item){
     if(curNV!=='all'&&item.nvGiao!==curNV)return false;
     if(vdFilter==='new')return !item.pushed;
-    if(vdFilter==='red')return item.lydo==='date'||item.lydo==='both';
-    if(vdFilter==='order')return item.lydo==='order'||item.lydo==='both';
-    if(vdFilter==='debt')return item.congNo>0;
+    if(vdFilter==='order')return item.lydo==='order';
+    if(vdFilter==='urgent')return item.lydo==='urgent'||item.loaiGiao==='gap'||item.loaiGiao==='hen';
+    if(vdFilter==='debt')return item.lydo==='debt'||item.congNo>0;
     return true;
   });
   var total=vdItems.filter(function(i){return curNV==='all'||i.nvGiao===curNV;}).length;
@@ -837,7 +855,7 @@ function renderVdList(){
   }
   var el=document.getElementById('vdList');
   if(!vdItems.length){
-    el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><div style="font-size:15px;font-weight:700;margin-bottom:8px;">Chua co diem giao nao</div><div style="font-size:13px;color:var(--mu);">Nhan "+" hoac tai tu Sheet</div></div>';
+    el.innerHTML='<div class="empty"><div class="empty-ico">➕</div><div style="font-size:15px;font-weight:700;margin-bottom:8px;">Chua co don phat sinh</div><div style="font-size:13px;color:var(--mu);line-height:1.5;">Bam <b>+</b> de them don khach dat,<br>thu no, giao gap hoac CH moi</div></div>';
     return;
   }
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ico">🔍</div><div style="font-size:13px;color:var(--mu);">Khong co muc phu hop</div></div>';return;}
@@ -846,23 +864,35 @@ function renderVdList(){
     var realIdx=vdItems.indexOf(item);
     var card=document.createElement('div');card.className='vd-card';
     if(item.pushed)card.classList.add('is-pushed');
-    if(item.lydo==='both')card.classList.add('c-both');
-    else if(item.lydo==='date')card.classList.add('c-red');
-    else if(item.lydo==='order')card.classList.add('c-blue');
+    if(item.lydo==='urgent'||item.lydo==='date')card.classList.add('c-red');
+    else if(item.lydo==='order'||item.lydo==='new')card.classList.add('c-blue');
+    else if(item.lydo==='debt')card.classList.add('c-both');
 
     var tagHtml='';
     if(item.pushed)tagHtml+='<span class="badge b-pushed">&#10003; Da day</span> ';
-    if(item.lydo==='date'||item.lydo==='both')tagHtml+='<span class="badge b-re">Het date</span> ';
-    if(item.lydo==='order'||item.lydo==='both')tagHtml+='<span class="badge b-bl">Co don</span> ';
-    if(item.congNo>0)tagHtml+='<span class="badge b-am">No: '+fmtMoney(item.congNo)+'</span> ';
+    if(item.lydo==='order')tagHtml+='<span class="badge b-bl">Don dat</span> ';
+    if(item.lydo==='debt')tagHtml+='<span class="badge b-am">Thu no</span> ';
+    if(item.lydo==='urgent')tagHtml+='<span class="badge b-re">Gap/Hen</span> ';
+    if(item.lydo==='new')tagHtml+='<span class="badge b-gr">CH moi</span> ';
+    if(item.lydo==='date')tagHtml+='<span class="badge b-re">Het date</span> ';
+    if(item.lydo==='other')tagHtml+='<span class="badge b-am">Khac</span> ';
+    if(item.congNo>0&&item.lydo!=='debt')tagHtml+='<span class="badge b-am">No: '+fmtMoney(item.congNo)+'</span> ';
     if(item.loaiGiao==='gap')tagHtml+='<span class="badge b-gap">&#9889; Giao gap</span>';
     if(item.loaiGiao==='hen'&&item.thoiGianHen)tagHtml+='<span class="badge b-hen">&#128336; '+esc(fmtHen(item.thoiGianHen))+'</span>';
 
     var prodsHtml='';
+    var _lydoMap={
+      'order':{label:'Dat', color:'background:var(--blb);color:var(--bl);'},
+      'debt':{label:'No', color:'background:var(--amb);color:var(--am);'},
+      'urgent':{label:'Gap', color:'background:var(--reb);color:var(--re);'},
+      'new':{label:'Moi', color:'background:var(--grb);color:var(--gr);'},
+      'date':{label:'Date', color:'background:var(--reb);color:var(--re);'},
+      'other':{label:'Khac', color:'background:var(--orb);color:var(--or);'}
+    };
+    var _info=_lydoMap[item.lydo]||_lydoMap['order'];
     (item.products||[]).forEach(function(p){
-      var tagColor=item.lydo==='date'?'background:var(--reb);color:var(--re);':item.lydo==='order'?'background:var(--blb);color:var(--bl);':'background:var(--orb);color:var(--or);';
       prodsHtml+='<div class="prod-row">'+
-        '<span class="prod-tag" style="'+tagColor+'">'+esc(item.lydo==='date'?'Thay':item.lydo==='order'?'Don':'Ca hai')+'</span>'+
+        '<span class="prod-tag" style="'+_info.color+'">'+esc(_info.label)+'</span>'+
         '<div style="flex:1;"><div class="prod-nm">'+esc(p.name)+'</div>'+(p.note?'<div class="prod-nt">'+esc(p.note)+'</div>':'')+
         '</div><div class="prod-qty">x'+p.qty+'</div></div>';
     });
@@ -943,10 +973,10 @@ function fillNVSelect(){
 
 function openAddItem(){
   editItemId=null;fprodRows=[];fprodData={};
-  document.getElementById('addTtl').textContent='Them diem giao';
+  document.getElementById('addTtl').textContent='Them don phat sinh';
   document.getElementById('addSub').textContent='';
   document.getElementById('fCuaHang').value='';
-  document.getElementById('fLyDo').value='date';
+  document.getElementById('fLyDo').value='order';
   document.getElementById('fCongNo').value='';
   document.getElementById('fGhiChu').value='';
   document.getElementById('btnDelItem').style.display='none';
@@ -962,7 +992,7 @@ function openAddItem(){
 function editItem(id){
   var item=vdItems.find(function(x){return x.id===id;});if(!item)return;
   editItemId=id;fprodRows=[];fprodData={};
-  document.getElementById('addTtl').textContent='Sua diem giao';
+  document.getElementById('addTtl').textContent='Sua don phat sinh';
   document.getElementById('addSub').textContent=item.store;
   document.getElementById('fCuaHang').value=item.store;
   document.getElementById('fLyDo').value=item.lydo||'date';
@@ -1193,6 +1223,38 @@ function saveThresh(){
   sv('vd_thresh_store',THRESH_STORE);
   toast('Da luu nguong canh bao!');
   goTab('set');
+}
+
+// == DAY NGUONG LEN SHEET (cho trigger doc) ==
+function pushThreshToSheet(){
+  if(!GS_URL){toast('Chua cai URL Script!');goTab('set');return;}
+  // Luu dat current state vao localStorage truoc
+  saveStoreThreshInline();
+  PROD_NAMES.forEach(function(prod){
+    var key=prod.replace(/\s/g,'_');
+    var r=document.getElementById('tr_'+key);
+    var a=document.getElementById('ta_'+key);
+    if(r&&a){THRESH_DEFAULT[prod]={red:parseInt(r.value)||3,amb:parseInt(a.value)||7};}
+  });
+  sv('vd_thresh',THRESH_DEFAULT);
+  sv('vd_thresh_store',THRESH_STORE);
+
+  toast('Dang day nguong len Sheet...');
+  fetch(GS_URL,{
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({
+      loai:'push_thresh',
+      device:'QuanLy',
+      thresh_default: THRESH_DEFAULT,
+      thresh_store: THRESH_STORE
+    })
+  }).then(function(){
+    toast('Da day nguong len Sheet! Trigger 5h sang se doc.');
+    sv('vd_thresh_last_push',Date.now());
+  }).catch(function(){
+    toast('Loi day nguong - thu lai sau');
+  });
 }
 
 // == NGUONG CUA HANG ==
@@ -1621,8 +1683,11 @@ function pushVanDon(){
       rows.push([
         ngay, item.nvGiao||'Chua phan cong', stt+1, item.store,
         prod.name, prod.qty||0, prod.note||'',
-        item.lydo||'', item.congNo||0, item.ghiChu||'',
-        item.mapUrl||'', 'Chua giao', quan
+        item.lydo||'order', item.congNo||0, item.ghiChu||'',
+        item.mapUrl||'', 'Chua giao', quan,
+        'phat_sinh',                           // [13] Nguon_don
+        item.loaiGiao||'normal',               // [14] Loai_giao: normal/gap/hen
+        item.thoiGianHen||''                   // [15] Thoi_gian_hen: "HH:mm" neu la hen
       ]);
     });
   });
@@ -1753,37 +1818,14 @@ function closeProdFilter(){document.getElementById('prodFilterModal').style.disp
 // == THEM HANG LOAT THEO NV ==
 function updateAddAllBar(){
   var bar=document.getElementById('addAllBar');
-  var txt=document.getElementById('addAllTxt');
   if(!bar)return;
-  if(homeNV==='all'){bar.style.display='none';return;}
-  // Dem so CH cua NV nay co alert thuc su (tinh nhu renderHome)
-  var PROD_COLS2=[
-    ['Nem chua - so ngay','Nem chua'],['Nem Thinh - so ngay','Nem Thinh'],
-    ['Banh bao kim sa - so ngay','Banh bao kim sa'],['Vit co lung - so ngay','Vit co lung'],
-    ['Nem Tom - so ngay','Nem Tom'],['Ha cao tom - so ngay','Ha cao tom'],
-    ['Mam tom 500g - so ngay','Mam tom 500g'],['Mam tep 500g - so ngay','Mam tep 500g'],
-    ['Nuoc mam 36N - so ngay','Nuoc mam 36N'],['Nuoc mam 31N - so ngay','Nuoc mam 31N'],
-    ['Nuoc mam 29N - so ngay','Nuoc mam 29N']
-  ];
-  var spFilter=Object.keys(homeProdFilters).filter(function(k){return homeProdFilters[k];});
-  var chSet={};
-  sheetRows.filter(function(r){return r.nvGiao===homeNV;}).forEach(function(row){
-    PROD_COLS2.forEach(function(pc){
-      if(spFilter.length&&spFilter.indexOf(pc[1])<0) return;
-      var val=row[pc[0]];if(!val&&val!==0)return;
-      var n=parseFloat(val);if(isNaN(n))return;
-      var col=getColor(n,pc[1],row.tenCH);
-      if(col==='red'||col==='amber'){
-        if(homeFilter==='gap'&&col!=='red') return;
-        if(homeFilter==='sap'&&col!=='amber') return;
-        chSet[row.tenCH]=1;
-      }
-    });
-  });
-  var cnt=Object.keys(chSet).length;
-  bar.style.display='flex';
-  var spTxt=spFilter.length?(' · '+spFilter.join(', ')):'';
-  if(txt)txt.textContent=homeNV+spTxt+' — '+cnt+' CH can giao';
+  // Trong quy trinh moi: khong them hang loat tu Tong quan nua
+  // (don den date tu chay sang app Giao hang)
+  bar.style.display='none';
+}
+function _oldUpdateAddAllBar(){
+  // Dead code — xoa trong quy trinh moi (don date tu chay sang app Giao hang)
+  return;
 }
 
 // == RESET VAN DON ==
