@@ -142,9 +142,9 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
 /* SETTINGS NGUONG */
 .thresh-sec{background:var(--sf);border-radius:13px;border:1px solid var(--bd);margin:10px 16px 0;overflow:hidden;}
 .thresh-hd{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--bd);background:var(--grb);}
-.thresh-col-hd{display:grid;grid-template-columns:1fr 36px 8px 36px;gap:4px;padding:7px 14px;background:var(--bg);border-bottom:1px solid var(--bd);}
+.thresh-col-hd{display:grid;grid-template-columns:1fr 40px 40px 40px;gap:6px;padding:7px 14px;background:var(--bg);border-bottom:1px solid var(--bd);align-items:center;}
 .thresh-col-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;}
-.thresh-row{display:grid;grid-template-columns:1fr 36px 8px 36px;gap:4px;align-items:center;padding:8px 14px;border-bottom:.5px solid var(--bd);}
+.thresh-row{display:grid;grid-template-columns:1fr 40px 40px 40px;gap:6px;align-items:center;padding:8px 14px;border-bottom:.5px solid var(--bd);}
 .thresh-row:last-child{border-bottom:none;}
 .thresh-name{font-size:13px;font-weight:600;}
 .ti{width:36px;padding:5px 4px;border-radius:6px;border:1.5px solid;font-size:12px;font-weight:700;text-align:center;background:#fff;outline:none;}
@@ -379,16 +379,44 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
     <div style="flex:1"><div class="tb-ttl">Nguong canh bao</div><div class="tb-sub">Do / Vang theo san pham</div></div>
     <button class="tb-btn wh" onclick="saveThresh()">Luu</button>
   </div>
-  <div style="padding:10px 16px;font-size:12px;color:var(--mu);background:var(--grb);border-bottom:1px solid var(--grl);">
-    <b style="color:var(--grd);">Do</b> = so ngay &lt;= nguong do · <b style="color:var(--grd);">Vang</b> = so ngay &lt;= nguong vang
+  <!-- Huong dan quy tac dat nguong -->
+  <div style="padding:12px 14px;background:#fef3c7;border-bottom:1px solid #fde68a;font-size:12px;color:#78350f;line-height:1.6;">
+    <div style="font-weight:700;margin-bottom:6px;font-size:13px;">📖 Cách đặt ngưỡng</div>
+    <div style="margin-bottom:6px;">
+      <b>"Số ngày"</b> = thời gian từ lần giao gần nhất đến hôm nay (càng lớn = CH càng lâu chưa nhập hàng mới).
+    </div>
+    <div style="margin-bottom:6px;">
+      <b style="color:#047857;">🟢 HSD</b> = hạn sử dụng chuẩn của SP (ngày). Dùng để hiển thị "HSD còn lại = HSD - số ngày đã qua".<br>
+      <b style="color:#d97706;">🟡 Vàng</b> = nếu số ngày đã qua ≥ giá trị này → cảnh báo (chưa tạo đơn).<br>
+      <b style="color:#dc2626;">🔴 Đỏ</b> = nếu số ngày đã qua ≥ giá trị này → <b>trigger sinh đơn giao gấp</b>.
+    </div>
+    <div style="margin-bottom:6px;">
+      <b>Quy tắc:</b> Vàng &lt; Đỏ &lt; HSD (Đỏ cao hơn Vàng vì "gấp hơn").
+    </div>
+    <div style="background:#fff;padding:8px 10px;border-radius:6px;border:1px solid #fde68a;margin-top:6px;">
+      <b>Ví dụ Nem chua:</b> HSD=<b>30</b>, Vàng=<b>18</b>, Đỏ=<b>23</b><br>
+      <span style="color:#78350f;">→ CH đã 18 ngày không giao: cảnh báo.<br>→ CH đã 23 ngày không giao: sinh đơn (HSD còn 7 ngày).<br>→ CH quá 30 ngày: hết date, hủy SP.</span>
+    </div>
+    <div style="background:#fff;padding:8px 10px;border-radius:6px;border:1px solid #fde68a;margin-top:6px;">
+      <b>Ví dụ Nước mắm:</b> HSD=<b>365</b>, Vàng=<b>280</b>, Đỏ=<b>330</b><br>
+      <span style="color:#78350f;">→ Có thể để lâu hơn nhiều trước khi cần giao lại.</span>
+    </div>
+    <div style="background:#fff;padding:8px 10px;border-radius:6px;border:1px solid #fde68a;margin-top:6px;">
+      <b>Ngưỡng CỬA HÀNG (ưu tiên cao hơn SP):</b><br>
+      CH bán nhanh → cần giao thường xuyên hơn, đặt Vàng=<b>10</b>, Đỏ=<b>14</b>.<br>
+      <span style="color:#78350f;">→ CH này 14 ngày đã sinh đơn dù HSD chuẩn còn 20 ngày nữa.</span>
+    </div>
+    <div style="margin-top:8px;font-size:11px;font-style:italic;">
+      💡 Sau khi chỉnh ngưỡng, nhớ bấm <b>"Đẩy ngưỡng lên Sheet"</b> để trigger 5h sáng mai áp dụng.
+    </div>
   </div>
   <div class="thresh-sec" style="margin-top:12px;">
     <div class="thresh-hd"><span class="form-hd-ico">📦</span><span class="form-hd-ttl">Nguong theo san pham (mac dinh)</span></div>
     <div class="thresh-col-hd">
       <span class="thresh-col-lbl">San pham</span>
-      <span style="font-size:10px;font-weight:700;color:var(--re);text-align:center;">Do</span>
-      <span></span>
+      <span style="font-size:10px;font-weight:700;color:var(--grd);text-align:center;">HSD</span>
       <span style="font-size:10px;font-weight:700;color:var(--am);text-align:center;">Vang</span>
+      <span style="font-size:10px;font-weight:700;color:var(--re);text-align:center;">Do</span>
     </div>
     <div id="threshRows"></div>
   </div>
@@ -529,19 +557,23 @@ var curLoaiGiao = 'normal';
 var THRESH_STORE = {}; // Nguong theo cua hang: {tenCH: {red:N, amb:N}}
 
 // Nguong canh bao mac dinh theo san pham
+// v2.4: Logic nguong "so ngay da qua tu lan giao gan nhat" (tang dan)
+// - HSD: han su dung chuan cua SP (ngay)
+// - amb (Vang): canh bao khi so ngay da qua >= gia tri nay
+// - red (Do):   sinh don khi so ngay da qua >= gia tri nay (red > amb)
 var THRESH_DEFAULT = {
-  'Nem chua':         {red:2, amb:5},
-  'Nem Thinh':        {red:2, amb:5},
-  'Banh bao kim sa':  {red:3, amb:7},
-  'Banh bao xa xiu':  {red:3, amb:7},
-  'Banh bao Maylayxia':{red:3,amb:7},
-  'Vit co lung':      {red:2, amb:4},
-  'Nem Tom':          {red:3, amb:7},
-  'Ha cao tom':       {red:3, amb:7},
-  'Nuoc mam':         {red:5, amb:14},
-  'Mam tom':          {red:7, amb:14},
-  'Mam tep':          {red:7, amb:14},
-  'Mac dinh':         {red:3, amb:7}
+  'Nem chua':          {hsd:30,  amb:18, red:23},
+  'Nem Thinh':         {hsd:30,  amb:18, red:23},
+  'Banh bao kim sa':   {hsd:60,  amb:40, red:50},
+  'Banh bao xa xiu':   {hsd:60,  amb:40, red:50},
+  'Banh bao Maylayxia':{hsd:60,  amb:40, red:50},
+  'Vit co lung':       {hsd:45,  amb:30, red:38},
+  'Nem Tom':           {hsd:60,  amb:40, red:50},
+  'Ha cao tom':        {hsd:60,  amb:40, red:50},
+  'Nuoc mam':          {hsd:365, amb:280,red:330},
+  'Mam tom':           {hsd:365, amb:280,red:330},
+  'Mam tep':           {hsd:365, amb:280,red:330},
+  'Mac dinh':          {hsd:60,  amb:40, red:50}
 };
 
 // == KHAI BAO SOM - tranh hoisting undefined ==
@@ -616,16 +648,19 @@ function getThresh(prodName){
 }
 function getColor(soNgay, prodName, storeName){
   if(soNgay===null||soNgay===undefined) return '';
-  // Nguong cua hang uu tien hon nguong san pham
+  // v2.4: So ngay TANG DAN tu lan giao gan nhat
+  // >= nguong red → do (can giao gap)
+  // >= nguong amb → vang (canh bao)
+  // < nguong amb → ok (moi giao, chua can)
   if(storeName && THRESH_STORE[storeName]){
     var st=THRESH_STORE[storeName];
-    if(soNgay<=st.red) return 'red';
-    if(soNgay<=st.amb) return 'amber';
+    if(soNgay>=st.red) return 'red';
+    if(soNgay>=st.amb) return 'amber';
     return 'ok';
   }
   var th = getThresh(prodName);
-  if(soNgay<=th.red) return 'red';
-  if(soNgay<=th.amb) return 'amber';
+  if(soNgay>=th.red) return 'red';
+  if(soNgay>=th.amb) return 'amber';
   return 'ok';
 }
 
@@ -1201,40 +1236,67 @@ function saveVD(){
 function renderThreshRows(){
   var c=document.getElementById('threshRows');c.innerHTML='';
   PROD_NAMES.forEach(function(prod){
-    var th=THRESH_DEFAULT[prod]||{red:3,amb:7};
+    var th=THRESH_DEFAULT[prod]||{hsd:60,amb:40,red:50};
+    // Backward compat: neu data cu khong co hsd, tu gan default
+    if(typeof th.hsd==='undefined') th.hsd=60;
     var row=document.createElement('div');row.className='thresh-row';
+    var key=prod.replace(/\s/g,'_');
     row.innerHTML='<span class="thresh-name">'+esc(prod)+'</span>'+
-      '<input class="ti ti-r" id="tr_'+prod.replace(/\s/g,'_')+'" value="'+th.red+'">'+
-      '<span class="sep">/</span>'+
-      '<input class="ti ti-a" id="ta_'+prod.replace(/\s/g,'_')+'" value="'+th.amb+'">';
+      '<input class="ti" style="border-color:var(--gr);color:var(--grd);" id="th_'+key+'" value="'+th.hsd+'" title="HSD chuan (ngay)">'+
+      '<input class="ti ti-a" id="ta_'+key+'" value="'+th.amb+'" title="Nguong vang">'+
+      '<input class="ti ti-r" id="tr_'+key+'" value="'+th.red+'" title="Nguong do">';
     c.appendChild(row);
   });
 }
 function saveThresh(){
+  var errors=[];
   PROD_NAMES.forEach(function(prod){
     var key=prod.replace(/\s/g,'_');
-    var r=document.getElementById('tr_'+key);
+    var h=document.getElementById('th_'+key);
     var a=document.getElementById('ta_'+key);
-    if(r&&a){THRESH_DEFAULT[prod]={red:parseInt(r.value)||3,amb:parseInt(a.value)||7};}
+    var r=document.getElementById('tr_'+key);
+    if(h&&a&&r){
+      var hsd=parseInt(h.value)||60;
+      var amb=parseInt(a.value)||40;
+      var red=parseInt(r.value)||50;
+      // Validate: amb < red < hsd
+      if(amb>=red) errors.push(prod+': Vang ('+amb+') phai < Do ('+red+')');
+      if(red>=hsd) errors.push(prod+': Do ('+red+') phai < HSD ('+hsd+')');
+      THRESH_DEFAULT[prod]={hsd:hsd,amb:amb,red:red};
+    }
   });
+  if(errors.length){
+    alert('Nguong khong hop le:\n\n'+errors.slice(0,3).join('\n')+(errors.length>3?'\n...':'')+'\n\nQuy tac: Vang < Do < HSD');
+    return;
+  }
   sv('vd_thresh',THRESH_DEFAULT);
   // Luu nguong cua hang hien dang hien tren man hinh
   saveStoreThreshInline();
   sv('vd_thresh_store',THRESH_STORE);
-  toast('Da luu nguong canh bao!');
+  toast('Da luu nguong! Nho bam "Day nguong len Sheet" de trigger sinh don date.');
+  // Hien panel vang nhac day len Sheet
+  setTimeout(function(){
+    if(confirm('Da luu nguong vao app.\n\nNgưỡng này chỉ dùng trong app, chưa đẩy lên Sheet.\nTrigger 5h sáng CẦN ngưỡng trên Sheet để sinh đơn date.\n\nĐẩy ngưỡng lên Sheet luôn?')){
+      pushThreshToSheet();
+    }
+  },300);
   goTab('set');
 }
 
 // == DAY NGUONG LEN SHEET (cho trigger doc) ==
 function pushThreshToSheet(){
   if(!GS_URL){toast('Chua cai URL Script!');goTab('set');return;}
-  // Luu dat current state vao localStorage truoc
   saveStoreThreshInline();
   PROD_NAMES.forEach(function(prod){
     var key=prod.replace(/\s/g,'_');
-    var r=document.getElementById('tr_'+key);
+    var h=document.getElementById('th_'+key);
     var a=document.getElementById('ta_'+key);
-    if(r&&a){THRESH_DEFAULT[prod]={red:parseInt(r.value)||3,amb:parseInt(a.value)||7};}
+    var r=document.getElementById('tr_'+key);
+    if(h&&a&&r){THRESH_DEFAULT[prod]={
+      hsd:parseInt(h.value)||60,
+      amb:parseInt(a.value)||40,
+      red:parseInt(r.value)||50
+    };}
   });
   sv('vd_thresh',THRESH_DEFAULT);
   sv('vd_thresh_store',THRESH_STORE);
