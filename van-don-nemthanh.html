@@ -511,16 +511,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
       <span class="flbl">URL Script</span>
       <input class="finp" id="fUrl" type="url" placeholder="https://script.google.com/...">
     </div>
-    <div class="frow">
-      <span class="flbl">Canh bao</span>
-      <select class="fsel" id="fWarnDays">
-        <option value="1">Con 1 ngay</option>
-        <option value="2">Con 2 ngay</option>
-        <option value="3" selected>Con 3 ngay</option>
-        <option value="5">Con 5 ngay</option>
-        <option value="7">Con 7 ngay</option>
-      </select>
-    </div>
   </div>
   <div style="padding:0 16px;display:flex;flex-direction:column;gap:9px;">
     <button class="btnsave" onclick="saveSettings()">Luu cai dat</button>
@@ -552,7 +542,7 @@ var vdFilter = 'all';
 var expFmt = 'full';
 var editItemId = null;
 var fprodRows = [], fprodData = {};
-var GS_URL = '', WARN_DAYS = 3;
+var GS_URL = '';
 var curLoaiGiao = 'normal';
 var THRESH_STORE = {}; // Nguong theo cua hang: {tenCH: {red:N, amb:N}}
 
@@ -608,7 +598,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 var _sr=ld('vd_sheet_rows',[]);sheetRows=Array.isArray(_sr)?_sr:[];
 var _vi=ld('vd_items',[]);vdItems=Array.isArray(_vi)?_vi:[];
 GS_URL = ld('vd_gs_url','');
-WARN_DAYS = ld('vd_warn_days',3);
+// WARN_DAYS removed v2.7 (dead code)
 THRESH_DEFAULT = ld('vd_thresh', THRESH_DEFAULT);
 THRESH_STORE = ld('vd_thresh_store', {});
 
@@ -1583,8 +1573,7 @@ function pullSheet(){
 // == SETTINGS ==
 function saveSettings(){
   GS_URL=document.getElementById('fUrl').value.trim();
-  WARN_DAYS=parseInt(document.getElementById('fWarnDays').value)||3;
-  sv('vd_gs_url',GS_URL);sv('vd_warn_days',WARN_DAYS);
+  sv('vd_gs_url',GS_URL);
   toast('Da luu!');
   if(GS_URL)pullSheet();
   goTab('home');
@@ -1606,7 +1595,6 @@ function saveSettings(){
 
 window.onload=function(){
   document.getElementById('fUrl').value=GS_URL||'';
-  document.getElementById('fWarnDays').value=String(WARN_DAYS);
   var ls=ld('vd_last_sync','');
   if(ls)document.getElementById('syncTime').textContent='Cap nhat luc '+ls;
   if(GS_URL&&!sheetRows.length)pullSheet();
