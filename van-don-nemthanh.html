@@ -777,7 +777,18 @@ function renderHome(){
   filteredStores.forEach(function(store){
     var data=byStore[store];
     var prodStrs=data.items.map(function(i){
-      return i.prod+'('+(i.soNgay<=0?'Het!':'Con '+i.soNgay+'n')+')';
+      // v2.7: soNgay la SO NGAY DA QUA (tang dan tu lan giao gan nhat)
+      // Tinh HSD con lai = HSD_chuan - da_qua de hien thi cho QL dung nghia "Con"
+      var th=getThresh(i.prod);
+      var hsdChuan=(th&&th.hsd)?th.hsd:null;
+      var display;
+      if(hsdChuan){
+        var conLai=hsdChuan-i.soNgay;
+        display=conLai<=0?'Het!':'con '+conLai+'n';
+      } else {
+        display='da qua '+i.soNgay+'n';
+      }
+      return i.prod+'('+display+')';
     }).join(' · ');
 
     var row=document.createElement('div');
@@ -824,7 +835,10 @@ function preAdd(store, data){
   fprodRows=[];fprodData={};
   (data.items||[]).forEach(function(item){
     var r=uid();fprodRows.push(r);
-    fprodData[r]={name:item.prod,qty:'',note:'Thay date (con '+item.soNgay+'n)'};
+    // v2.7 BUG FIX: item.soNgay = da qua (tang dan). Note phai la HSD con lai = HSD - da qua
+    var th=getThresh(item.prod);
+    var conLai=(th&&th.hsd)?Math.max(0,th.hsd-item.soNgay):item.soNgay;
+    fprodData[r]={name:item.prod,qty:'',note:'Thay date (con '+conLai+'n)'};
   });
   renderFProdRows();
 }
@@ -1939,7 +1953,10 @@ function taoVanDonTuSheet(){
         };
       }
       if(!chMap[key].prods[pc[1]]){
-        chMap[key].prods[pc[1]]={name:pc[1],qty:0,note:'Thay date (con '+n+'n)'};
+        // v2.7 BUG FIX: n la da qua, note phai la HSD con lai
+        var thP1=getThresh(pc[1]);
+        var conLai1=(thP1&&thP1.hsd)?Math.max(0,thP1.hsd-n):n;
+        chMap[key].prods[pc[1]]={name:pc[1],qty:0,note:'Thay date (con '+conLai1+'n)'};
       }
     });
   });
@@ -2032,7 +2049,10 @@ function addAllNVToVanDon(){
       }
       // Moi SP chi them 1 lan, lay so ngay nho nhat neu co nhieu dong
       if(!chMap[row.tenCH].prods[pc[1]]){
-        chMap[row.tenCH].prods[pc[1]]={name:pc[1],qty:0,note:'Thay date (con '+n+'n)'};
+        // v2.7 BUG FIX: n la da qua, note phai la HSD con lai
+        var thP2=getThresh(pc[1]);
+        var conLai2=(thP2&&thP2.hsd)?Math.max(0,thP2.hsd-n):n;
+        chMap[row.tenCH].prods[pc[1]]={name:pc[1],qty:0,note:'Thay date (con '+conLai2+'n)'};
       }
     });
   });
@@ -2097,7 +2117,10 @@ function bulkAddToVanDon(){
       var n=parseFloat(val);if(isNaN(n))return;
       var col=getColor(n,pc[1],row.tenCH);
       if(col==='red'||col==='amber'){
-        byStore[row.tenCH].prods.push({name:pc[1],qty:0,note:'Thay date (con '+n+'n)'});
+        // v2.7 BUG FIX: n la da qua, note phai la HSD con lai
+        var thP3=getThresh(pc[1]);
+        var conLai3=(thP3&&thP3.hsd)?Math.max(0,thP3.hsd-n):n;
+        byStore[row.tenCH].prods.push({name:pc[1],qty:0,note:'Thay date (con '+conLai3+'n)'});
       }
     });
   });
